@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 
 
@@ -29,9 +30,48 @@ namespace CraftingSim.Model
         /// necessary quantities.
         /// </summary>
         /// <param name="recipeFiles">Array of file paths</param>
-        public void LoadRecipesFromFile(string[] recipeFiles)
+        /// 
+        /// TODO
+        public void LoadRecipesFromFile(string[] recipeFiles) //id, nome, quantidade
         {
-            //TODO Implement Me
+            for (int i = 0; i < recipeFiles.Length; i++)
+            {
+                string filePath = recipeFiles[i];
+                
+                try
+                {
+                    using (StreamReader reader = new StreamReader(filePath))
+                    {
+                        string line;
+                        while ((line = reader.ReadLine()) != null)
+                        {
+                            string[] parts = line.Split(',');
+
+                            string name = parts[0].Trim();
+                            double successRate = double.Parse(parts[1].Trim());
+                            Dictionary<IMaterial, int> requiredMaterials = new Dictionary<IMaterial, int>();
+
+                            for (int c = 2; c < parts.Length; c++)
+                            {
+                                string[] materialParts = parts[c].Trim().Split(':');
+
+                                IMaterial material = new Material(materialParts[0].Trim());
+                                int quantity = int.Parse(materialParts[1].Trim());
+                                requiredMaterials.Add(material, quantity);
+                            }
+
+                            IRecipe recipe = new Recipe(name, successRate, requiredMaterials);
+                            recipeList.Add(recipe);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error loading recipes from file: " + ex.Message);
+                }
+            }
+             
+
         }
 
         /// <summary>

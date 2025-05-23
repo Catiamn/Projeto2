@@ -82,9 +82,36 @@ namespace CraftingSim.Model
         /// Loads the materials and their quantities from the text file.
         /// </summary>
         /// <param name="file">Path to the materials file</param>
-        public void LoadMaterialsFromFile(string file)
+        public void LoadMaterialsFromFile(string file) //id, name, quantity
         {
             //TODO Implement Me
+            for (int i = 0; i < materialsFiles.Length; i++)
+            {
+                string filePath = materialsFiles[i];
+
+                try
+                {
+                    using (StreamReader reader = new StreamReader(filePath))
+                    {
+                        string line;
+                        while ((line = reader.ReadLine()) != null)
+                        {
+                            string[] parts = line.Split(',');
+
+                            string id = parts[0].Trim();
+                            double name = parts[1].Trim();
+                            int quantity = int.Parse(parts[2].Trim());
+
+                            IMaterial material = new Material(id, name);
+                            materials.Add(material, quantity);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error loading recipes from file: " + ex.Message);
+                }
+            }
         }
     }
 }
