@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Globalization; 
+using CraftingSim.Model; 
 
 
 namespace CraftingSim.Model
@@ -32,12 +34,12 @@ namespace CraftingSim.Model
         /// <param name="recipeFiles">Array of file paths</param>
         /// 
         /// TODO
-        public void LoadRecipesFromFile(string[] recipeFiles) //id, nome, quantidade
+        public void LoadRecipesFromFile(string[] recipeFiles)
         {
             for (int i = 0; i < recipeFiles.Length; i++)
             {
                 string filePath = recipeFiles[i];
-                
+
                 try
                 {
                     using (StreamReader reader = new StreamReader(filePath))
@@ -48,19 +50,20 @@ namespace CraftingSim.Model
                             string[] parts = line.Split(',');
 
                             string name = parts[0].Trim();
-                            double successRate = double.Parse(parts[1].Trim());
+                            double successRate = double.Parse(parts[1].Trim(), CultureInfo.InvariantCulture); // Updated line
                             Dictionary<IMaterial, int> requiredMaterials = new Dictionary<IMaterial, int>();
 
                             for (int c = 2; c < parts.Length; c++)
                             {
-                                string[] materialParts = parts[c].Trim().Split(':');
+                                string[] materialParts = parts[c].Trim().Split(',');
 
-                                IMaterial material = new Material(materialParts[0].Trim());
+                                IMaterial material = new Material(materialParts[0].Trim().GetHashCode(), materialParts[0].Trim());
                                 int quantity = int.Parse(materialParts[1].Trim());
                                 requiredMaterials.Add(material, quantity);
                             }
 
-                            IRecipe recipe = new Recipe(name, successRate, requiredMaterials);
+                            IRecipe recipe = new Recipe(name, requiredMaterials, successRate);
+
                             recipeList.Add(recipe);
                         }
                     }

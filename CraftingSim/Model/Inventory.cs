@@ -1,4 +1,8 @@
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System;
+using CraftingSim.Model;
 
 namespace CraftingSim.Model
 {
@@ -39,18 +43,34 @@ namespace CraftingSim.Model
         public void AddMaterial(IMaterial material, int quantity)
         {
             //TODO Implement Me
+            if (materials.ContainsKey(material))
+            {
+                materials[material] += quantity;
+            }
+            else
+            {
+                materials.Add(material, quantity);
+            }
         }
 
         /// <summary>
         /// Removes a given amount of a material from inventory
         /// If theres not enough material it is not removed.
-        /// </summary>
+        /// </summary> 
         /// <param name="material">The material we want to remove from</param>
         /// <param name="quantity">The amount to remove</param>
         /// <returns>True if removed successfuly, false if not enough material</returns>
         public bool RemoveMaterial(IMaterial material, int quantity)
         {
             // TODO Implement Me
+            if (materials.ContainsKey(material))
+            {
+                if (materials[material] >= quantity)
+                {
+                    materials[material] -= quantity;
+                    return true;
+                }
+            }
             return false;
         }
 
@@ -82,36 +102,39 @@ namespace CraftingSim.Model
         /// Loads the materials and their quantities from the text file.
         /// </summary>
         /// <param name="file">Path to the materials file</param>
-        public void LoadMaterialsFromFile(string file) //id, name, quantity
+        public void LoadMaterialsFromFile(string file)
         {
             //TODO Implement Me
-            for (int i = 0; i < materialsFiles.Length; i++)
+            if (!File.Exists(file))
+                throw new FileNotFoundException("The specified file does not exist.", file);
+
+            foreach (string line in File.ReadLines(file))
             {
-                string filePath = materialsFiles[i];
+                //id, name, quantity
+                string[] parts = line.Split(',');
 
-                try
+                int id = int.Parse(parts[0]);
+                string name = parts[1];
+                int quantity = int.Parse(parts[2]);
+
+                
+                IMaterial material = GetMaterial(id);
+
+                if (material == null)
                 {
-                    using (StreamReader reader = new StreamReader(filePath))
-                    {
-                        string line;
-                        while ((line = reader.ReadLine()) != null)
-                        {
-                            string[] parts = line.Split(',');
-
-                            string id = parts[0].Trim();
-                            double name = parts[1].Trim();
-                            int quantity = int.Parse(parts[2].Trim());
-
-                            IMaterial material = new Material(id, name);
-                            materials.Add(material, quantity);
-                        }
-                    }
+                    material = new Material(id, name);
                 }
-                catch (Exception ex)
+
+                if (materials.ContainsKey(material))
                 {
-                    Console.WriteLine("Error loading recipes from file: " + ex.Message);
+                    materials[material] += quantity;
+                }
+                else
+                {
+                    materials.Add(material, quantity);
                 }
             }
         }
     }
 }
+
